@@ -5,13 +5,17 @@
 using namespace std;
 
 int main() {
-    Person p("Serge Kashkevich");
-    Person p1(p);
-    Person p2("Person");
+    try {
+        Person Eva = Person::getEva();
+        Person Adam = Person::getAdam();
 
-    cout << p2.getName() << endl;
-    p2 = p1;
-    p1 = Person("Oreshko");
-    cout << p2.getName() << endl;
-    cout << p1.getName() << endl;
+        Person Kain = Eva.giveBirth("Kain", Person::Sex::MALE, &Adam);
+
+        //cout << Kain << endl;
+        //delete Kain.getMother();
+        //cout << *Kain.getMother() << endl;
+    }
+    catch (std::exception& e) {
+        cerr << e.what() << endl;
+    }
 }
