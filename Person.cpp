@@ -6,6 +6,8 @@
 #include <exception>
 #include <iostream>
 #include <limits>
+#include <random>
+#include <memory>
 
 int Person::nextID = 2;
 static bool isAdamCreated = false;
@@ -13,6 +15,7 @@ static bool isEvaCreated = false;
 static constexpr int AdamID = 0;
 static constexpr int EvaID = 1;
 
+//region Constructors
 Person::Person(const std::string& name, Sex sex, Status status, unsigned int age, Person* mother, Person* father): id(nextID++)
 {
     if (mother == nullptr) {
@@ -46,6 +49,30 @@ Person::Person(int id, const std::string& name, Sex sex, Status status, unsigned
     _age = age;
 }
 
+Person::Person(const Person& other) : id(-1) {
+    throw std::exception("No clones here. We don't want Order 66, right?");
+}
+//endregion
+
+//region First people
+Person Person::getAdam() {
+    if (isAdamCreated) {
+        throw std::exception("Adam has already been created");
+    }
+    isAdamCreated = true;
+    return Person(AdamID, "Adam", Sex::MALE, Status::ALIVE, 7529);
+}
+
+Person Person::getEva() {
+    if (isEvaCreated) {
+        throw std::exception("Eva has already been created");
+    }
+    isEvaCreated = true;
+    return Person(EvaID, "Eva", Sex::FEMALE, Status::ALIVE, 7529);
+}
+//endregion
+
+//region Birth funcs
 Person Person::giveBirth(const std::string& name, const Sex& sex, Person* father) {
     if (this->_status == Status::DEAD || (father != nullptr && father->_status == Status::DEAD)) {
         throw std::exception("Parents must be alive to give birth");
@@ -53,12 +80,46 @@ Person Person::giveBirth(const std::string& name, const Sex& sex, Person* father
     return Person(name, sex, Status::ALIVE, 0, this, father);
 }
 
-Person::Person(const Person& other) : id(-1) {
-    throw std::exception("No clones here. We don't want Order 66, right?");
+std::shared_ptr<Person> Person::haveSex(Person* partner, bool condom, const std::string& name) {
+    if (partner == nullptr) {
+        std::cout << "Having fun alone" << std::endl;
+    }
+    else if (this->_sex == partner->_sex) {
+        std::cout << "Welcome to LGBT club" << std::endl;
+    }
+    else if (this->_sex != partner->_sex) {
+
+        std::cout << "Fe, getero" << std::endl;
+
+        float probability;
+        if (condom) {
+            probability = 0.01;
+        }
+        else {
+            probability = 0.2;
+        }
+        std::uniform_real_distribution<> dis(0.0f, 1.0f);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        float dice = dis(gen);
+        if (dice <= probability) {
+            std::cout << "You have a baby!" << std::endl;
+            std::shared_ptr<Person> p(new Person(
+                    name,
+                    dice <= probability / 2 ? Sex::FEMALE : Sex::MALE,
+                    Status::ALIVE,
+                    0,
+                    this->_sex == Sex::FEMALE ? this : partner,
+                    this->_sex == Sex::FEMALE ? partner : this));
+            return p;
+        }
+    }
+
+    return nullptr;
 }
+//endregion
 
-Person::~Person() = default;
-
+//region Getters
 std::string Person::getName() const {
     return _name;
 }
@@ -97,19 +158,30 @@ std::string Person::getStatusToString() const {
     return _status == Status::ALIVE ? "Alive" : "Dead";
 }
 
+unsigned int Person::getAge() const {
+    return _age;
+}
+//endregion
+
+//region Setters
+void Person::setName(const std::string& name) {
+    if (name.empty()) {
+        throw std::exception("Name is empty!");
+    }
+    _name = name;
+}
+
+void Person::setAge(unsigned int age) {
+    _age = age;
+}
+//endregion
+
+//region State funcs
 void Person::kill() {
     if(_status == Status::DEAD) {
         throw std::exception("What is dead may never die");
     }
     _status = Status::DEAD;
-}
-
-unsigned int Person::getAge() const {
-    return _age;
-}
-
-void Person::setAge(unsigned int age) {
-    _age = age;
 }
 
 void Person::birthday() {
@@ -118,26 +190,14 @@ void Person::birthday() {
     }
     _age++;
 }
+//endregion
 
-Person Person::getAdam() {
-    if (isAdamCreated) {
-        throw std::exception("Adam has already been created");
-    }
-    isAdamCreated = true;
-    return Person(AdamID, "Adam", Sex::MALE, Status::ALIVE, 7529);
-}
-
-Person Person::getEva() {
-    if (isEvaCreated) {
-        throw std::exception("Eva has already been created");
-    }
-    isEvaCreated = true;
-    return Person(EvaID, "Eva", Sex::FEMALE, Status::ALIVE, 7529);
-}
-
+//region Help funcs
 std::ostream& operator<<(std::ostream& out, const Person& other) {
     out << "ID: " << other.id << std::endl << "Name: " << other._name << std::endl
-    << "Sex: " << other.getSexToString() << std::endl << "Status: " << other.getStatusToString() << ";" << std::endl;
+    << "Sex: " << other.getSexToString() << std::endl << "Status: " << other.getStatusToString() << std::endl
+    << "Age: " << other._age << " years;" << std::endl;
     return out;
 }
+//endregion
 

@@ -16,10 +16,11 @@ public:
 
     Person(const Person& other);
     Person& operator=(const Person& other) = delete;
-    virtual ~Person();
+    virtual ~Person() = default;
 
     const int getID() const;
     std::string getName() const;
+    void setName(const std::string &name);
     Sex getSex() const;
     std::string getSexToString() const;
     Status getStatus() const;
@@ -31,10 +32,12 @@ public:
     const Person* getFather() const;
     const Person* getMother() const;
 
-    static Person getAdam();
-    static Person getEva();
+    [[nodiscard]] static Person getAdam();
+    [[nodiscard]] static Person getEva();
 
-    Person giveBirth(const std::string& name, const Sex& sex, Person* father = nullptr);
+    [[nodiscard]] std::shared_ptr<Person> haveSex(Person* partner, bool condom, const std::string& name = "Unnamed");
+    [[nodiscard]] Person giveBirth(const std::string& name, const Sex& sex, Person* father = nullptr);
+
     friend std::ostream& operator << (std::ostream& out, const Person&);
 
 private:
@@ -46,7 +49,6 @@ private:
     unsigned int _age = 0;
     Person* _mother = nullptr;
     Person* _father = nullptr;
-
     Person(const std::string& name, Sex sex, Status status, unsigned int age, Person* mother, Person* father = nullptr);
     Person(int id, const std::string& name, Sex sex, Status status, unsigned int age);
 };
