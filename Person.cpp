@@ -81,37 +81,44 @@ Person Person::giveBirth(const std::string& name, const Sex& sex, Person* father
 }
 
 std::shared_ptr<Person> Person::haveSex(Person* partner, bool condom, const std::string& name) {
+    if (this->_status == Status::DEAD) {
+        throw std::exception("Dead person can't have sex, I guess");
+    }
+
     if (partner == nullptr) {
         std::cout << "Having fun alone" << std::endl;
     }
-    else if (this->_sex == partner->_sex) {
-        std::cout << "Welcome to LGBT club" << std::endl;
+    else if (partner->_status == Status::DEAD) {
+        std::cout << "Oh, you are a necrophiliac. What a filth.";
     }
-    else if (this->_sex != partner->_sex) {
+    else {
+        if (this->_sex == partner->_sex) {
+            std::cout << "Welcome to LGBT club" << std::endl;
+        } else if (this->_sex != partner->_sex) {
 
-        std::cout << "Fe, getero" << std::endl;
+            std::cout << "Fe, getero" << std::endl;
 
-        float probability;
-        if (condom) {
-            probability = 0.01;
-        }
-        else {
-            probability = 0.2;
-        }
-        std::uniform_real_distribution<> dis(0.0f, 1.0f);
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        float dice = dis(gen);
-        if (dice <= probability) {
-            std::cout << "You have a baby!" << std::endl;
-            std::shared_ptr<Person> p(new Person(
-                    name,
-                    dice <= probability / 2 ? Sex::FEMALE : Sex::MALE,
-                    Status::ALIVE,
-                    0,
-                    this->_sex == Sex::FEMALE ? this : partner,
-                    this->_sex == Sex::FEMALE ? partner : this));
-            return p;
+            float probability;
+            if (condom) {
+                probability = 0.01;
+            } else {
+                probability = 0.2;
+            }
+            std::uniform_real_distribution<> dis(0.0f, 1.0f);
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            float dice = dis(gen);
+            if (dice <= probability) {
+                std::cout << "You have a baby!" << std::endl;
+                std::shared_ptr<Person> p(new Person(
+                        name,
+                        dice <= probability / 2 ? Sex::FEMALE : Sex::MALE,
+                        Status::ALIVE,
+                        0,
+                        this->_sex == Sex::FEMALE ? this : partner,
+                        this->_sex == Sex::FEMALE ? partner : this));
+                return p;
+            }
         }
     }
 
